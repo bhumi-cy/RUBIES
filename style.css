@@ -1,0 +1,723 @@
+/* =========================================================
+   RUBIES
+   Main Game Styles
+   ========================================================= */
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+
+    font-family: "Quicksand", sans-serif;
+
+    color: #ffffff;
+
+    background:
+        radial-gradient(
+            circle at 50% 10%,
+            #351b38 0%,
+            #211021 38%,
+            #120912 72%,
+            #0b050c 100%
+        );
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow-x: hidden;
+
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+
+/* =========================================================
+   GAME CONTAINER
+   ========================================================= */
+
+.game-container {
+    width: 100%;
+    max-width: 500px;
+
+    padding: 24px 20px 30px;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.logo {
+    font-family:
+        "Cormorant Garamond",
+        serif;
+
+    font-size: 68px;
+
+    font-weight: 500;
+
+    line-height: 0.95;
+
+    letter-spacing: 2px;
+
+    margin: 0;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 4px 25px
+        rgba(255, 180, 230, 0.16);
+}
+
+
+/* =========================================================
+   SUBTITLE
+   ========================================================= */
+
+.subtitle {
+    margin-top: 11px;
+    margin-bottom: 25px;
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+    letter-spacing: 1px;
+
+    opacity: 0.62;
+}
+
+
+/* =========================================================
+   SCORE AREA
+   ========================================================= */
+
+.score-area {
+    width: min(90vw, 400px);
+
+    margin: 0 auto 16px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+
+/* =========================================================
+   SCORE BOX
+   ========================================================= */
+
+.score-box {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 11px 18px;
+
+    border-radius: 17px;
+
+    background:
+        rgba(255, 255, 255, 0.055);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    box-shadow:
+        0 8px 30px
+        rgba(0, 0, 0, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.score-box:hover {
+    transform: translateY(-2px);
+
+    background:
+        rgba(255, 255, 255, 0.075);
+}
+
+
+/* =========================================================
+   SCORE LABEL
+   ========================================================= */
+
+.score-label {
+    font-size: 10px;
+
+    font-weight: 500;
+
+    letter-spacing: 1.5px;
+
+    text-transform: uppercase;
+
+    opacity: 0.52;
+}
+
+
+/* =========================================================
+   SCORE NUMBER
+   ========================================================= */
+
+.score {
+    margin-top: 2px;
+
+    font-size: 25px;
+
+    font-weight: 600;
+
+    line-height: 1.1;
+
+    transition:
+        transform 0.2s ease;
+}
+
+
+/* =========================================================
+   GAME BOARD
+   ========================================================= */
+
+#board {
+    width: min(90vw, 400px);
+
+    aspect-ratio: 1 / 1;
+
+    margin: 0 auto;
+
+    padding: 8px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(8, 1fr);
+
+    grid-template-rows:
+        repeat(8, 1fr);
+
+    gap: 5px;
+
+    border-radius: 21px;
+
+    background:
+        rgba(255, 255, 255, 0.045);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.07);
+
+    box-shadow:
+        0 20px 60px
+        rgba(0, 0, 0, 0.30);
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    touch-action: none;
+}
+
+
+/* =========================================================
+   BOARD CELLS
+   ========================================================= */
+
+.cell {
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    border-radius: 7px;
+
+    background:
+        rgba(255, 255, 255, 0.075);
+
+    transition:
+        transform 0.15s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+
+    position: relative;
+}
+
+
+/* =========================================================
+   FILLED CELLS
+   ========================================================= */
+
+.cell.filled {
+    transform: scale(0.91);
+
+    border-radius: 7px;
+}
+
+
+/* =========================================================
+   PIECE PLACEMENT ANIMATION
+   ========================================================= */
+
+.cell-pop {
+    animation:
+        cellPop 0.25s ease;
+}
+
+@keyframes cellPop {
+
+    0% {
+        transform: scale(0.55);
+        opacity: 0.4;
+    }
+
+    65% {
+        transform: scale(1.02);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.91);
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   LINE CLEAR ANIMATION
+   ========================================================= */
+
+.cell-clear {
+    animation:
+        cellClear 0.28s ease forwards;
+}
+
+@keyframes cellClear {
+
+    0% {
+        transform: scale(0.91);
+        opacity: 1;
+    }
+
+    45% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+
+/* =========================================================
+   PIECE TRAY
+   ========================================================= */
+
+#piece-tray {
+    width: min(90vw, 400px);
+
+    min-height: 105px;
+
+    margin: 24px auto 0;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 20px;
+}
+
+
+/* =========================================================
+   PIECES
+   ========================================================= */
+
+.piece {
+    position: relative;
+
+    display: grid;
+
+    gap: 4px;
+
+    place-items: center;
+
+    min-width: 68px;
+    min-height: 68px;
+
+    padding: 13px;
+
+    border-radius: 17px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.06);
+
+    cursor: grab;
+
+    touch-action: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    -webkit-touch-callout: none;
+
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease,
+        opacity 0.18s ease;
+
+    animation:
+        pieceAppear 0.3s ease;
+
+    z-index: 5;
+}
+
+
+/* =========================================================
+   PIECE HOVER
+   ========================================================= */
+
+.piece:hover {
+    transform:
+        translateY(-5px)
+        scale(1.05);
+
+    background:
+        rgba(255, 255, 255, 0.065);
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.20);
+}
+
+
+/* =========================================================
+   PIECE WHILE DRAGGING
+   ========================================================= */
+
+.piece-dragging {
+    transform:
+        translateY(-10px)
+        scale(1.15);
+
+    opacity: 0.82;
+
+    cursor: grabbing;
+
+    z-index: 100;
+
+    background:
+        rgba(255, 255, 255, 0.09);
+
+    box-shadow:
+        0 15px 35px
+        rgba(0, 0, 0, 0.35);
+
+    transition:
+        transform 0.12s ease,
+        opacity 0.12s ease;
+}
+
+
+/* =========================================================
+   USED PIECE
+   ========================================================= */
+
+.piece-used {
+    transform:
+        scale(0.45);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        transform 0.15s ease,
+        opacity 0.15s ease;
+}
+
+
+/* =========================================================
+   MINI PIECE BLOCKS
+   ========================================================= */
+
+.piece-cell {
+    width: 18px;
+    height: 18px;
+
+    border-radius: 5px;
+
+    pointer-events: none;
+
+    transition:
+        transform 0.15s ease;
+}
+
+
+.piece:hover .piece-cell {
+    transform:
+        scale(1.05);
+}
+
+
+/* =========================================================
+   DRAG PREVIEW
+   ========================================================= */
+
+.cell.drag-preview {
+    background:
+        var(--preview-color);
+
+    opacity: 0.52;
+
+    transform:
+        scale(0.91);
+
+    box-shadow:
+        0 0 15px
+        var(--preview-color);
+
+    animation:
+        previewPulse 0.8s
+        ease-in-out
+        infinite;
+
+    z-index: 2;
+}
+
+
+/* =========================================================
+   DRAG PREVIEW ANIMATION
+   ========================================================= */
+
+@keyframes previewPulse {
+
+    0% {
+        opacity: 0.35;
+    }
+
+    50% {
+        opacity: 0.72;
+    }
+
+    100% {
+        opacity: 0.35;
+    }
+}
+
+
+/* =========================================================
+   SCORE POPUP
+   ========================================================= */
+
+.score-popup {
+    position: fixed;
+
+    pointer-events: none;
+
+    z-index: 1000;
+
+    transform:
+        translate(-50%, -50%);
+
+    font-family:
+        "Quicksand",
+        sans-serif;
+
+    font-size: 22px;
+
+    font-weight: 600;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 3px 15px
+        rgba(255, 255, 255, 0.3);
+
+    animation:
+        scoreFloat 0.8s
+        ease forwards;
+}
+
+
+/* =========================================================
+   SCORE FLOAT
+   ========================================================= */
+
+@keyframes scoreFloat {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, 10px)
+            scale(0.75);
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -65px)
+            scale(1.08);
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 450px) {
+
+    .game-container {
+        padding:
+            18px 14px 25px;
+    }
+
+
+    .logo {
+        font-size: 55px;
+    }
+
+
+    .subtitle {
+        margin-top: 9px;
+        margin-bottom: 21px;
+
+        font-size: 14px;
+    }
+
+
+    .score-area {
+        width: 90vw;
+
+        gap: 9px;
+
+        margin-bottom: 13px;
+    }
+
+
+    .score-box {
+        padding:
+            9px 14px;
+
+        border-radius: 15px;
+    }
+
+
+    .score {
+        font-size: 23px;
+    }
+
+
+    #board {
+        width: 90vw;
+
+        gap: 4px;
+
+        padding: 7px;
+
+        border-radius: 18px;
+    }
+
+
+    .cell {
+        border-radius: 6px;
+    }
+
+
+    #piece-tray {
+        width: 90vw;
+
+        gap: 9px;
+
+        min-height: 90px;
+
+        margin-top: 20px;
+    }
+
+
+    .piece {
+        min-width: 60px;
+        min-height: 60px;
+
+        padding: 10px;
+
+        border-radius: 15px;
+    }
+
+
+    .piece-cell {
+        width: 16px;
+        height: 16px;
+
+        border-radius: 4px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 350px) {
+
+    .logo {
+        font-size: 50px;
+    }
+
+
+    #piece-tray {
+        gap: 5px;
+    }
+
+
+    .piece {
+        min-width: 55px;
+        min-height: 55px;
+
+        padding: 8px;
+    }
+
+
+    .piece-cell {
+        width: 14px;
+        height: 14px;
+    }
+}
