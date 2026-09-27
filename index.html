@@ -3,23 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
     <title>rubies</title>
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Delius&family=Quicksand:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+        rel="stylesheet"
+    >
 
+    <!-- Main stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
 
+
 <body>
 
-    <!-- home screen -->
+
+    <!-- =========================================================
+         HOME SCREEN
+    ========================================================== -->
 
     <main id="home-screen" class="screen active-screen">
 
@@ -31,16 +42,24 @@
             <span>♡</span>
         </div>
 
+
         <div class="home-content">
 
-            <div class="tiny-decoration">˚₊‧♡‧₊˚</div>
+            <div class="tiny-decoration">
+                ˚₊‧♡‧₊˚
+            </div>
 
-            <h1 class="home-logo">rubies</h1>
+
+            <h1 class="home-logo">
+                rubies
+            </h1>
+
 
             <p class="home-tagline">
                 a little game of<br>
-                placing & clearing
+                placing &amp; clearing
             </p>
+
 
             <div class="home-divider">
                 <span>♡</span>
@@ -50,14 +69,17 @@
                 <span>♡</span>
             </div>
 
+
             <button id="play-button" class="main-button">
                 <span>play</span>
                 <span class="button-star">✧</span>
             </button>
 
+
             <button id="how-to-play-button" class="text-button">
                 how to play ♡
             </button>
+
 
             <div class="home-footer">
                 <span>made with love</span>
@@ -70,52 +92,130 @@
     </main>
 
 
-    <!-- how to play -->
+
+    <!-- =========================================================
+         HOW TO PLAY SCREEN
+    ========================================================== -->
 
     <section id="how-to-screen" class="screen">
 
         <div class="how-card">
 
-            <button id="how-back-button" class="corner-button">♡</button>
 
-            <div class="tiny-decoration">✧ ˚₊‧♡‧₊˚ ✧</div>
+            <!-- Back button -->
 
-            <h2>how to play</h2>
+            <button id="how-back-button" class="corner-button">
+                ♡
+            </button>
 
-            <div class="how-item">
-                <div class="how-icon">✦</div>
-                <div>
-                    <h3>place</h3>
-                    <p>drag a piece onto the board wherever it fits.</p>
-                </div>
+
+            <!-- Decorative heading -->
+
+            <div class="tiny-decoration">
+                ✧ ˚₊‧♡‧₊˚ ✧
             </div>
 
-            <div class="how-item">
-                <div class="how-icon">♡</div>
-                <div>
-                    <h3>clear</h3>
-                    <p>complete a row or column to clear it and score.</p>
-                </div>
-            </div>
+
+            <h2>
+                how to play
+            </h2>
+
+
+            <!-- THE CUTE LINE 💗 -->
+
+            <p class="how-to-cute-line">
+                come on, cutie ♡ just play — you'll figure it out.
+            </p>
+
+
+            <!-- PLACE -->
 
             <div class="how-item">
-                <div class="how-icon">☆</div>
-                <div>
-                    <h3>save</h3>
-                    <p>keep one special piece aside for later.</p>
+
+                <div class="how-icon">
+                    ✦
                 </div>
+
+                <div>
+                    <h3>
+                        place
+                    </h3>
+
+                    <p>
+                        drag a piece onto the board wherever it fits.
+                    </p>
+                </div>
+
             </div>
 
+
+            <!-- CLEAR -->
+
             <div class="how-item">
-                <div class="how-icon">✧</div>
-                <div>
-                    <h3>keep going</h3>
-                    <p>use your pieces wisely and chase your best score.</p>
+
+                <div class="how-icon">
+                    ♡
                 </div>
+
+                <div>
+                    <h3>
+                        clear
+                    </h3>
+
+                    <p>
+                        complete a row or column to clear it and score.
+                    </p>
+                </div>
+
             </div>
+
+
+            <!-- SAVE -->
+
+            <div class="how-item">
+
+                <div class="how-icon">
+                    ☆
+                </div>
+
+                <div>
+                    <h3>
+                        save
+                    </h3>
+
+                    <p>
+                        keep one special piece aside for later.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- KEEP GOING -->
+
+            <div class="how-item">
+
+                <div class="how-icon">
+                    ✧
+                </div>
+
+                <div>
+                    <h3>
+                        keep going
+                    </h3>
+
+                    <p>
+                        use your pieces wisely and chase your best score.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- Play button -->
 
             <button id="how-play-button" class="main-button small-button">
-                play
+                <span>play</span>
                 <span class="button-star">✧</span>
             </button>
 
@@ -124,11 +224,17 @@
     </section>
 
 
-    <!-- game -->
+
+    <!-- =========================================================
+         GAME SCREEN
+    ========================================================== -->
 
     <section id="game-screen" class="screen">
 
         <div class="game-container">
+
+
+            <!-- GAME HEADER -->
 
             <div class="game-top">
 
@@ -136,76 +242,166 @@
                     ♡
                 </button>
 
+
                 <div class="game-title-wrap">
-                    <h1 class="game-logo">rubies</h1>
-                    <p>place · clear · score</p>
+
+                    <h1 class="game-logo">
+                        rubies
+                    </h1>
+
+                    <p>
+                        place · clear · score
+                    </p>
+
                 </div>
+
 
                 <div class="game-top-spacer"></div>
 
             </div>
 
 
+
+            <!-- SCORE AREA -->
+
             <div class="score-area">
 
-                <div class="score-box">
-                    <span class="score-label">score</span>
-                    <span class="score" id="score">0</span>
-                </div>
 
                 <div class="score-box">
-                    <span class="score-label">best</span>
-                    <span class="score" id="best">0</span>
+
+                    <span class="score-label">
+                        score
+                    </span>
+
+                    <span class="score" id="score">
+                        0
+                    </span>
+
+                </div>
+
+
+                <div class="score-box">
+
+                    <span class="score-label">
+                        best
+                    </span>
+
+                    <span class="score" id="best">
+                        0
+                    </span>
+
                 </div>
 
             </div>
 
 
+
+            <!-- BOARD -->
+
             <div class="board-wrap">
 
-                <div class="board-decoration top-left">☆</div>
-                <div class="board-decoration top-right">♡</div>
-                <div class="board-decoration bottom-left">✧</div>
-                <div class="board-decoration bottom-right">☆</div>
+                <div class="board-decoration top-left">
+                    ☆
+                </div>
+
+                <div class="board-decoration top-right">
+                    ♡
+                </div>
+
+                <div class="board-decoration bottom-left">
+                    ✧
+                </div>
+
+                <div class="board-decoration bottom-right">
+                    ☆
+                </div>
+
 
                 <div id="board"></div>
 
             </div>
 
 
+
+            <!-- PIECE TRAY HEADING -->
+
             <div class="tray-heading">
-                <span>choose a piece</span>
-                <span class="tray-sparkles">✧ ♡ ✧</span>
+
+                <span>
+                    choose a piece
+                </span>
+
+                <span class="tray-sparkles">
+                    ✧ ♡ ✧
+                </span>
+
             </div>
 
+
+
+            <!-- THREE ACTIVE PIECES -->
 
             <div id="piece-tray"></div>
 
 
+
+            <!-- HOLD / SAVE AREA -->
+
             <div class="hold-area">
 
+
                 <div class="hold-label">
-                    <span>save one for later</span>
-                    <span>♡</span>
+
+                    <span>
+                        save one for later
+                    </span>
+
+                    <span>
+                        ♡
+                    </span>
+
                 </div>
 
+
                 <div id="hold-slot" class="hold-slot">
-                    <span class="hold-empty">♡</span>
+
+                    <span class="hold-empty">
+                        ♡
+                    </span>
+
                 </div>
 
             </div>
 
 
+
+            <!-- GAME FOOTER -->
+
             <div class="game-footer">
-                <span>♡</span>
-                <span>keep creating little wins</span>
-                <span>♡</span>
+
+                <span>
+                    ♡
+                </span>
+
+                <span>
+                    keep creating little wins
+                </span>
+
+                <span>
+                    ♡
+                </span>
+
             </div>
 
         </div>
 
     </section>
 
+
+
+    <!-- =========================================================
+         GAME JAVASCRIPT
+    ========================================================== -->
 
     <script src="game.js"></script>
 

@@ -1,6 +1,6 @@
 /* =========================================================
    rubies
-   game engine
+   final game engine
    ========================================================= */
 
 
@@ -25,7 +25,7 @@ const holdSlot =
 
 
 /* =========================================================
-   OPTIONAL SCREEN ELEMENTS
+   SCREEN ELEMENTS
    ========================================================= */
 
 const homeScreen =
@@ -66,6 +66,8 @@ let gameOverOverlay = null;
 
 let holdPiece = null;
 
+let trayPieces = [];
+
 
 /* =========================================================
    DRAG STATE
@@ -90,13 +92,6 @@ let dragGhost = null;
    SMOOTH DRAG STATE
    ========================================================= */
 
-/*
-   IMPORTANT:
-   Keep this value.
-
-   This is the smoothness you already liked.
-*/
-
 const DRAG_SMOOTHNESS = 0.28;
 
 let targetGhostX = 0;
@@ -109,10 +104,10 @@ let dragAnimationFrame = null;
 
 
 /* =========================================================
-   SAVE BUTTON STATE
+   GAME OVER TIMER
    ========================================================= */
 
-let lastPointerDownTime = 0;
+let gameOverCheckTimer = null;
 
 
 /* =========================================================
@@ -120,13 +115,12 @@ let lastPointerDownTime = 0;
    ========================================================= */
 
 if (bestDisplay) {
-    bestDisplay.textContent =
-        bestScore;
+    bestDisplay.textContent = bestScore;
 }
 
 
 /* =========================================================
-   PIECES
+   PIECE SHAPES
    ========================================================= */
 
 const shapes = [
@@ -146,71 +140,29 @@ const shapes = [
     [[0, 0], [0, 1], [0, 2], [0, 3]],
     [[0, 0], [1, 0], [2, 0], [3, 0]],
 
-    /* square */
-    [
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1]
-    ],
-
     /* small L */
-    [
-        [0, 0],
-        [1, 0],
-        [1, 1]
-    ],
+    [[0, 0], [1, 0], [1, 1]],
 
-    [
-        [0, 1],
-        [1, 0],
-        [1, 1]
-    ],
+    /* small L mirrored */
+    [[0, 1], [1, 0], [1, 1]],
 
     /* L */
-    [
-        [0, 0],
-        [1, 0],
-        [2, 0],
-        [2, 1]
-    ],
+    [[0, 0], [1, 0], [2, 0], [2, 1]],
 
-    [
-        [0, 1],
-        [1, 1],
-        [2, 0],
-        [2, 1]
-    ],
+    /* L mirrored */
+    [[0, 1], [1, 1], [2, 0], [2, 1]],
 
     /* T */
-    [
-        [0, 0],
-        [0, 1],
-        [0, 2],
-        [1, 1]
-    ],
+    [[0, 0], [0, 1], [0, 2], [1, 1]],
 
-    [
-        [0, 1],
-        [1, 0],
-        [1, 1],
-        [1, 2]
-    ],
+    /* T rotated */
+    [[0, 1], [1, 0], [1, 1], [1, 2]],
 
     /* zigzag */
-    [
-        [0, 0],
-        [0, 1],
-        [1, 1],
-        [1, 2]
-    ],
+    [[0, 0], [0, 1], [1, 1], [1, 2]],
 
-    [
-        [0, 1],
-        [0, 2],
-        [1, 0],
-        [1, 1]
-    ],
+    /* zigzag mirrored */
+    [[0, 1], [0, 2], [1, 0], [1, 1]],
 
     /* 3x3 */
     [
@@ -232,7 +184,6 @@ const shapes = [
    ========================================================= */
 
 const colors = [
-
     "#F49AB8",
     "#C5A3E8",
     "#8FCDE3",
@@ -254,13 +205,13 @@ function showScreen(screen) {
 
     document
         .querySelectorAll(".screen")
-        .forEach(
-            element => {
-                element.classList.remove(
-                    "active-screen"
-                );
-            }
-        );
+        .forEach(element => {
+
+            element.classList.remove(
+                "active-screen"
+            );
+
+        });
 
     screen.classList.add(
         "active-screen"
@@ -269,37 +220,98 @@ function showScreen(screen) {
 
 
 /* =========================================================
-   HOME / HOW TO / GAME BUTTONS
+   HOW TO PLAY CUTE LINE
+   ========================================================= */
+
+function addHowToCuteLine() {
+
+    if (!howToScreen) {
+        return;
+    }
+
+    if (
+        howToScreen.querySelector(
+            ".how-to-cute-line"
+        )
+    ) {
+        return;
+    }
+
+    const line =
+        document.createElement("p");
+
+    line.className =
+        "how-to-cute-line";
+
+    line.textContent =
+        "come on, cutie ♡ just play — you'll figure it out.";
+
+    const card =
+        howToScreen.querySelector(
+            ".how-card"
+        );
+
+    if (!card) {
+        howToScreen.appendChild(line);
+        return;
+    }
+
+    const heading =
+        card.querySelector("h2");
+
+    if (heading) {
+
+        heading.insertAdjacentElement(
+            "afterend",
+            line
+        );
+
+    } else {
+
+        card.prepend(line);
+    }
+}
+
+
+/* =========================================================
+   NAVIGATION SETUP
    ========================================================= */
 
 function setupNavigation() {
+
+    addHowToCuteLine();
+
+
+    /* PLAY BUTTONS */
 
     const playButtons =
         document.querySelectorAll(
             "#play-button, #how-play-button, .play-button"
         );
 
-    playButtons.forEach(
-        button => {
+    playButtons.forEach(button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+        button.addEventListener(
+            "click",
+            () => {
 
-                    startNewGame();
+                startNewGame();
 
-                    showScreen(
-                        gameScreen
-                    );
-                }
-            );
-        }
-    );
+                showScreen(
+                    gameScreen
+                );
 
+            }
+        );
+
+    });
+
+
+    /* HOW TO PLAY */
 
     const howToButton =
         document.querySelector(
-            "#how-to-button, .how-to-button"
+            "#how-to-play-button, .how-to-button"
         );
 
     if (howToButton) {
@@ -311,39 +323,44 @@ function setupNavigation() {
                 showScreen(
                     howToScreen
                 );
+
             }
         );
     }
 
 
-    const backButtons =
+    /* HOME BUTTONS */
+
+    const homeButtons =
         document.querySelectorAll(
             "#back-home, #home-button, .back-home"
         );
 
-    backButtons.forEach(
-        button => {
+    homeButtons.forEach(button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+        button.addEventListener(
+            "click",
+            () => {
 
-                    if (dragging) {
-                        cancelDrag();
-                    }
+                cancelDrag();
 
-                    showScreen(
-                        homeScreen
-                    );
-                }
-            );
-        }
-    );
+                closeGameOverOverlay();
 
+                showScreen(
+                    homeScreen
+                );
+
+            }
+        );
+
+    });
+
+
+    /* HOW TO BACK BUTTON */
 
     const howBackButton =
         document.querySelector(
-            "#how-back, .how-back"
+            "#how-back-button, #how-back, .how-back, .corner-button"
         );
 
     if (howBackButton) {
@@ -352,9 +369,12 @@ function setupNavigation() {
             "click",
             () => {
 
+                cancelDrag();
+
                 showScreen(
                     homeScreen
                 );
+
             }
         );
     }
@@ -382,9 +402,7 @@ function createBoard() {
     ) {
 
         const cell =
-            document.createElement(
-                "div"
-            );
+            document.createElement("div");
 
         cell.classList.add(
             "cell"
@@ -405,18 +423,17 @@ function createBoard() {
    GET BOARD POSITION
    ========================================================= */
 
-function getBoardPosition(
-    x,
-    y
-) {
+function getBoardPosition(x, y) {
+
+    if (!board) {
+        return null;
+    }
 
     const rect =
         board.getBoundingClientRect();
 
     const styles =
-        getComputedStyle(
-            board
-        );
+        getComputedStyle(board);
 
     const padding =
         parseFloat(
@@ -519,7 +536,6 @@ function calculatePlacement(
 
     const indexes = [];
 
-
     for (const block of shape) {
 
         const row =
@@ -529,7 +545,6 @@ function calculatePlacement(
         const column =
             startColumn +
             block[1];
-
 
         if (
             row < 0 ||
@@ -541,11 +556,9 @@ function calculatePlacement(
             return null;
         }
 
-
         const index =
             row * boardSize +
             column;
-
 
         if (
             cells[index]
@@ -556,24 +569,211 @@ function calculatePlacement(
             return null;
         }
 
-
         indexes.push(
             index
         );
     }
-
 
     return indexes;
 }
 
 
 /* =========================================================
-   SHOW PREVIEW
+   GET PIECE DATA
    ========================================================= */
 
-function showPreview(
-    startIndex
-) {
+function getPieceData(piece) {
+
+    if (!piece) {
+        return null;
+    }
+
+    if (
+        piece.shape &&
+        piece.color
+    ) {
+
+        return piece;
+    }
+
+    if (
+        piece.pieceData &&
+        piece.pieceData.shape
+    ) {
+
+        return piece.pieceData;
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   CHECK WHETHER PIECE FITS ANYWHERE
+   ========================================================= */
+
+function canPieceFitAnywhere(piece) {
+
+    const data =
+        getPieceData(piece);
+
+    if (
+        !data ||
+        !data.shape ||
+        !cells.length
+    ) {
+
+        return false;
+    }
+
+    for (
+        let index = 0;
+        index < cells.length;
+        index++
+    ) {
+
+        if (
+            calculatePlacement(
+                index,
+                data.shape
+            )
+        ) {
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+/* =========================================================
+   UPDATE SAVE BUTTON STATES
+   ========================================================= */
+
+function updateSaveButtonStates() {
+
+    trayPieces.forEach(piece => {
+
+        if (
+            !piece ||
+            !piece.element
+        ) {
+
+            return;
+        }
+
+        const button =
+            piece.element.querySelector(
+                ".piece-save-button"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        const holdIsFull =
+            !!holdPiece;
+
+        button.disabled =
+            holdIsFull;
+
+        button.setAttribute(
+            "aria-disabled",
+            holdIsFull
+                ? "true"
+                : "false"
+        );
+
+        button.title =
+            holdIsFull
+                ? "hold is full"
+                : "save for later";
+    });
+}
+
+
+/* =========================================================
+   UPDATE PIECE USABILITY
+   ========================================================= */
+
+function updatePieceUsability() {
+
+    /* -------------------------
+       TRAY
+       ------------------------- */
+
+    trayPieces.forEach(piece => {
+
+        if (!piece.element) {
+            return;
+        }
+
+        const usable =
+            canPieceFitAnywhere(
+                piece
+            );
+
+        piece.element.classList.toggle(
+            "unusable",
+            !usable
+        );
+
+        /*
+           IMPORTANT:
+           Grey pieces stay interactive
+           because their save-heart must work.
+        */
+
+        piece.element.style.pointerEvents =
+            "auto";
+    });
+
+
+    /* -------------------------
+       HOLD
+       ------------------------- */
+
+    if (
+        holdPiece &&
+        holdPiece.element
+    ) {
+
+        const usable =
+            canPieceFitAnywhere(
+                holdPiece
+            );
+
+        holdPiece.element.classList.toggle(
+            "unusable",
+            !usable
+        );
+
+        holdSlot?.classList.toggle(
+            "unusable",
+            !usable
+        );
+
+        holdPiece.element.style.pointerEvents =
+            "auto";
+
+    } else {
+
+        holdSlot?.classList.remove(
+            "unusable"
+        );
+    }
+
+
+    updateSaveButtonStates();
+}
+
+
+/* =========================================================
+   PREVIEW
+   ========================================================= */
+
+function showPreview(startIndex) {
 
     clearPreview();
 
@@ -581,39 +781,34 @@ function showPreview(
         return;
     }
 
-
     const placement =
         calculatePlacement(
             startIndex,
             draggedShape
         );
 
-
     if (!placement) {
         return;
     }
 
+    placement.forEach(index => {
 
-    placement.forEach(
-        index => {
+        const cell =
+            cells[index];
 
-            const cell =
-                cells[index];
+        cell.classList.add(
+            "drag-preview"
+        );
 
-            cell.classList.add(
-                "drag-preview"
-            );
+        cell.style.setProperty(
+            "--preview-color",
+            draggedColor
+        );
 
-            cell.style.setProperty(
-                "--preview-color",
-                draggedColor
-            );
-
-            previewCells.push(
-                cell
-            );
-        }
-    );
+        previewCells.push(
+            cell
+        );
+    });
 }
 
 
@@ -623,26 +818,17 @@ function showPreview(
 
 function clearPreview() {
 
-    previewCells.forEach(
-        cell => {
+    previewCells.forEach(cell => {
 
-            cell.classList.remove(
-                "drag-preview"
-            );
+        cell.classList.remove(
+            "drag-preview"
+        );
 
-            cell.style.removeProperty(
-                "--preview-color"
-            );
+        cell.style.removeProperty(
+            "--preview-color"
+        );
 
-            cell.classList.remove(
-                "preview-valid"
-            );
-
-            cell.classList.remove(
-                "preview-invalid"
-            );
-        }
-    );
+    });
 
     previewCells = [];
 }
@@ -658,14 +844,14 @@ function createDragGhost(
 ) {
 
     const ghost =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
     ghost.classList.add(
         "rubies-drag-ghost"
     );
 
+    ghost.style.pointerEvents =
+        "none";
 
     const maxRow =
         Math.max(
@@ -681,79 +867,65 @@ function createDragGhost(
             )
         );
 
-
     const blockSize = 22;
     const blockGap = 4;
-
 
     ghost.style.display =
         "grid";
 
     ghost.style.gridTemplateColumns =
-        `repeat(
-            ${maxColumn + 1},
-            ${blockSize}px
-        )`;
+        `repeat(${maxColumn + 1}, ${blockSize}px)`;
 
     ghost.style.gridTemplateRows =
-        `repeat(
-            ${maxRow + 1},
-            ${blockSize}px
-        )`;
+        `repeat(${maxRow + 1}, ${blockSize}px)`;
 
     ghost.style.gap =
         `${blockGap}px`;
 
+    shape.forEach(block => {
 
-    shape.forEach(
-        block => {
+        const blockElement =
+            document.createElement("div");
 
-            const blockElement =
-                document.createElement(
-                    "div"
-                );
+        blockElement.style.width =
+            `${blockSize}px`;
 
+        blockElement.style.height =
+            `${blockSize}px`;
 
-            blockElement.style.width =
-                `${blockSize}px`;
+        blockElement.style.borderRadius =
+            "6px";
 
-            blockElement.style.height =
-                `${blockSize}px`;
+        blockElement.style.background =
+            color;
 
-            blockElement.style.borderRadius =
-                "6px";
+        blockElement.style.boxShadow =
+            `0 5px 14px ${color}66`;
 
-            blockElement.style.background =
-                color;
+        blockElement.style.gridRow =
+            block[0] + 1;
 
-            blockElement.style.boxShadow =
-                `0 5px 14px ${color}66`;
+        blockElement.style.gridColumn =
+            block[1] + 1;
 
-            blockElement.style.gridRow =
-                block[0] + 1;
+        blockElement.style.pointerEvents =
+            "none";
 
-            blockElement.style.gridColumn =
-                block[1] + 1;
-
-
-            ghost.appendChild(
-                blockElement
-            );
-        }
-    );
-
+        ghost.appendChild(
+            blockElement
+        );
+    });
 
     document.body.appendChild(
         ghost
     );
-
 
     return ghost;
 }
 
 
 /* =========================================================
-   SMOOTH GHOST ANIMATION
+   SMOOTH DRAG ANIMATION
    ========================================================= */
 
 function animateDragGhost() {
@@ -769,27 +941,19 @@ function animateDragGhost() {
         return;
     }
 
-
-    /*
-       DO NOT CHANGE THIS.
-
-       This is the smoothness
-       from your previous version.
-    */
-
     currentGhostX +=
         (
             targetGhostX -
             currentGhostX
-        ) * DRAG_SMOOTHNESS;
-
+        ) *
+        DRAG_SMOOTHNESS;
 
     currentGhostY +=
         (
             targetGhostY -
             currentGhostY
-        ) * DRAG_SMOOTHNESS;
-
+        ) *
+        DRAG_SMOOTHNESS;
 
     dragGhost.style.left =
         `${currentGhostX}px`;
@@ -797,17 +961,12 @@ function animateDragGhost() {
     dragGhost.style.top =
         `${currentGhostY}px`;
 
-
     dragAnimationFrame =
         requestAnimationFrame(
             animateDragGhost
         );
 }
 
-
-/* =========================================================
-   START GHOST ANIMATION
-   ========================================================= */
 
 function startGhostAnimation(
     x,
@@ -820,7 +979,6 @@ function startGhostAnimation(
     currentGhostX = x;
     currentGhostY = y;
 
-
     if (
         dragAnimationFrame !== null
     ) {
@@ -830,17 +988,12 @@ function startGhostAnimation(
         );
     }
 
-
     dragAnimationFrame =
         requestAnimationFrame(
             animateDragGhost
         );
 }
 
-
-/* =========================================================
-   STOP GHOST ANIMATION
-   ========================================================= */
 
 function stopGhostAnimation() {
 
@@ -858,14 +1011,7 @@ function stopGhostAnimation() {
 }
 
 
-/* =========================================================
-   UPDATE DRAG GHOST
-   ========================================================= */
-
-function updateDragGhost(
-    x,
-    y
-) {
+function updateDragGhost(x, y) {
 
     if (!dragGhost) {
         return;
@@ -875,352 +1021,6 @@ function updateDragGhost(
     targetGhostY = y;
 }
 
-
-/* =========================================================
-   START DRAG
-   ========================================================= */
-
-function startDrag(
-    event,
-    piece
-) {
-
-    event.preventDefault();
-
-
-    if (
-        dragging ||
-        gameOver ||
-        !piece
-    ) {
-
-        return;
-    }
-
-
-    /*
-       A greyed-out piece cannot be dragged.
-    */
-
-    if (
-        piece.element.classList.contains(
-            "unusable"
-        )
-    ) {
-
-        return;
-    }
-
-
-    dragging = true;
-
-    draggedPiece = piece;
-
-    draggedShape =
-        piece.shape;
-
-    draggedColor =
-        piece.color;
-
-    draggedSource =
-        piece.source;
-
-
-    piece.element.classList.add(
-        "piece-dragging"
-    );
-
-
-    try {
-
-        piece.element.setPointerCapture(
-            event.pointerId
-        );
-
-    } catch (error) {
-        /* Safe fallback. */
-    }
-
-
-    dragGhost =
-        createDragGhost(
-            draggedShape,
-            draggedColor
-        );
-
-
-    startGhostAnimation(
-        event.clientX,
-        event.clientY
-    );
-
-
-    updateDragPosition(
-        event
-    );
-
-
-    playPickupSound();
-}
-
-
-/* =========================================================
-   DRAG MOVEMENT
-   ========================================================= */
-
-function updateDragPosition(
-    event
-) {
-
-    if (!dragging) {
-        return;
-    }
-
-
-    event.preventDefault();
-
-
-    updateDragGhost(
-        event.clientX,
-        event.clientY
-    );
-
-
-    const index =
-        getBoardPosition(
-            event.clientX,
-            event.clientY
-        );
-
-
-    if (index === null) {
-
-        clearPreview();
-
-        return;
-    }
-
-
-    showPreview(
-        index
-    );
-}
-
-
-/* =========================================================
-   END DRAG
-   ========================================================= */
-
-function endDrag(
-    event
-) {
-
-    if (!dragging) {
-        return;
-    }
-
-
-    event.preventDefault();
-
-
-    const index =
-        getBoardPosition(
-            event.clientX,
-            event.clientY
-        );
-
-
-    let placed = false;
-
-
-    if (
-        index !== null &&
-        draggedShape
-    ) {
-
-        const placement =
-            calculatePlacement(
-                index,
-                draggedShape
-            );
-
-
-        if (placement) {
-
-            placePiece(
-                placement,
-                draggedColor
-            );
-
-            placed = true;
-        }
-    }
-
-
-    clearPreview();
-
-
-    const currentPiece =
-        draggedPiece;
-
-
-    if (currentPiece) {
-
-        currentPiece.element.classList.remove(
-            "piece-dragging"
-        );
-
-
-        try {
-
-            currentPiece.element.releasePointerCapture(
-                event.pointerId
-            );
-
-        } catch (error) {
-            /* Already released. */
-        }
-    }
-
-
-    stopGhostAnimation();
-
-    removeDragGhost();
-
-
-    if (placed) {
-
-        playPlaceSound();
-
-
-        currentPiece.element.classList.add(
-            "piece-used"
-        );
-
-
-        const source =
-            currentPiece.source;
-
-
-        const oldElement =
-            currentPiece.element;
-
-
-        /*
-           Tray piece:
-           remove it and generate
-           exactly one new piece.
-
-           Hold piece:
-           consume it and leave
-           the hold slot empty.
-        */
-
-        setTimeout(
-            () => {
-
-                oldElement.remove();
-
-
-                if (
-                    source === "tray"
-                ) {
-
-                    createSinglePiece(
-                        "tray"
-                    );
-                }
-
-
-                if (
-                    source === "hold"
-                ) {
-
-                    holdPiece =
-                        null;
-
-                    renderHoldPiece();
-                }
-
-
-                updatePieceUsability();
-
-            },
-            150
-        );
-
-
-        /*
-           Wait for placement /
-           clear animation before
-           checking game over.
-        */
-
-        setTimeout(
-            () => {
-
-                checkGameOver();
-
-            },
-            370
-        );
-    }
-
-
-    dragging = false;
-
-    draggedPiece = null;
-
-    draggedShape = null;
-
-    draggedColor = null;
-
-    draggedSource = null;
-}
-
-
-/* =========================================================
-   CANCEL DRAG
-   ========================================================= */
-
-function cancelDrag() {
-
-    if (!dragging) {
-        return;
-    }
-
-
-    clearPreview();
-
-
-    if (draggedPiece) {
-
-        draggedPiece.element.classList.remove(
-            "piece-dragging"
-        );
-    }
-
-
-    stopGhostAnimation();
-
-    removeDragGhost();
-
-
-    dragging = false;
-
-    draggedPiece = null;
-
-    draggedShape = null;
-
-    draggedColor = null;
-
-    draggedSource = null;
-}
-
-
-/* =========================================================
-   REMOVE DRAG GHOST
-   ========================================================= */
 
 function removeDragGhost() {
 
@@ -1235,6 +1035,355 @@ function removeDragGhost() {
 
 
 /* =========================================================
+   START DRAG
+   ========================================================= */
+
+function startDrag(
+    event,
+    piece
+) {
+
+    if (
+        dragging ||
+        gameOver ||
+        !piece
+    ) {
+
+        return;
+    }
+
+    /*
+       Grey pieces cannot be played.
+       Their save button still works.
+    */
+
+    if (
+        !canPieceFitAnywhere(
+            piece
+        )
+    ) {
+
+        return;
+    }
+
+    event.preventDefault();
+
+    dragging = true;
+
+    draggedPiece = piece;
+
+    draggedShape =
+        piece.shape;
+
+    draggedColor =
+        piece.color;
+
+    draggedSource =
+        piece.source;
+
+    piece.element.classList.add(
+        "piece-dragging"
+    );
+
+    try {
+
+        piece.element.setPointerCapture(
+            event.pointerId
+        );
+
+    } catch (error) {
+        /* safe fallback */
+    }
+
+    dragGhost =
+        createDragGhost(
+            draggedShape,
+            draggedColor
+        );
+
+    startGhostAnimation(
+        event.clientX,
+        event.clientY
+    );
+
+    updateDragPosition(
+        event
+    );
+
+    playPickupSound();
+}
+
+
+/* =========================================================
+   DRAG MOVEMENT
+   ========================================================= */
+
+function updateDragPosition(event) {
+
+    if (!dragging) {
+        return;
+    }
+
+    event.preventDefault();
+
+    updateDragGhost(
+        event.clientX,
+        event.clientY
+    );
+
+    const index =
+        getBoardPosition(
+            event.clientX,
+            event.clientY
+        );
+
+    if (index === null) {
+
+        clearPreview();
+
+        return;
+    }
+
+    showPreview(
+        index
+    );
+}
+
+
+/* =========================================================
+   END DRAG
+   ========================================================= */
+
+function endDrag(event) {
+
+    if (!dragging) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const index =
+        getBoardPosition(
+            event.clientX,
+            event.clientY
+        );
+
+    let placement = null;
+
+    if (
+        index !== null &&
+        draggedShape
+    ) {
+
+        placement =
+            calculatePlacement(
+                index,
+                draggedShape
+            );
+    }
+
+
+    /* -------------------------
+       VALID DROP
+       ------------------------- */
+
+    if (placement) {
+
+        const usedPiece =
+            draggedPiece;
+
+        const source =
+            draggedSource;
+
+        const pieceElement =
+            usedPiece.element;
+
+
+        placePiece(
+            placement,
+            draggedColor
+        );
+
+
+        clearPreview();
+
+
+        pieceElement.classList.remove(
+            "piece-dragging"
+        );
+
+        pieceElement.classList.add(
+            "piece-used"
+        );
+
+
+        try {
+
+            pieceElement.releasePointerCapture(
+                event.pointerId
+            );
+
+        } catch (error) {
+            /* safe fallback */
+        }
+
+
+        stopGhostAnimation();
+
+        removeDragGhost();
+
+
+        dragging = false;
+
+        draggedPiece = null;
+        draggedShape = null;
+        draggedColor = null;
+        draggedSource = null;
+
+
+        playPlaceSound();
+
+
+        /* -------------------------
+           TRAY PIECE USED
+           ------------------------- */
+
+        if (source === "tray") {
+
+            removeTrayPiece(
+                usedPiece
+            );
+
+            setTimeout(
+                () => {
+
+                    createSinglePiece();
+
+                    updatePieceUsability();
+
+                },
+                150
+            );
+        }
+
+
+        /* -------------------------
+           HOLD PIECE USED
+           ------------------------- */
+
+        if (source === "hold") {
+
+            holdPiece = null;
+
+            setTimeout(
+                () => {
+
+                    renderHoldPiece();
+
+                    updatePieceUsability();
+
+                },
+                150
+            );
+        }
+
+
+        /*
+           Wait until line-clear animation
+           and board reset are complete.
+        */
+
+        scheduleGameOverCheck(
+            500
+        );
+
+        return;
+    }
+
+
+    /* -------------------------
+       INVALID DROP
+       ------------------------- */
+
+    cancelDrag();
+}
+
+
+/* =========================================================
+   REMOVE TRAY PIECE
+   ========================================================= */
+
+function removeTrayPiece(piece) {
+
+    const index =
+        trayPieces.indexOf(
+            piece
+        );
+
+    if (index !== -1) {
+
+        trayPieces.splice(
+            index,
+            1
+        );
+    }
+
+    if (piece.element) {
+        piece.element.remove();
+    }
+}
+
+
+/* =========================================================
+   CANCEL DRAG
+   ========================================================= */
+
+function cancelDrag() {
+
+    clearPreview();
+
+    if (draggedPiece) {
+
+        draggedPiece.element.classList.remove(
+            "piece-dragging"
+        );
+
+        try {
+
+            if (
+                draggedPiece.element.hasPointerCapture &&
+                draggedPiece.element.hasPointerCapture(
+                    event?.pointerId
+                )
+            ) {
+
+                draggedPiece.element.releasePointerCapture(
+                    event.pointerId
+                );
+            }
+
+        } catch (error) {
+            /* safe fallback */
+        }
+    }
+
+    stopGhostAnimation();
+
+    removeDragGhost();
+
+    dragging = false;
+
+    draggedPiece = null;
+
+    draggedShape = null;
+
+    draggedColor = null;
+
+    draggedSource = null;
+}
+
+
+/* =========================================================
    PLACE PIECE
    ========================================================= */
 
@@ -1243,39 +1392,31 @@ function placePiece(
     color
 ) {
 
-    indexes.forEach(
-        index => {
+    indexes.forEach(index => {
 
-            const cell =
-                cells[index];
+        const cell =
+            cells[index];
 
+        cell.classList.add(
+            "filled"
+        );
 
-            cell.classList.add(
-                "filled"
-            );
+        cell.style.background =
+            color;
 
+        cell.style.boxShadow =
+            `0 4px 12px ${color}55`;
 
-            cell.style.background =
-                color;
+        cell.classList.remove(
+            "cell-pop"
+        );
 
+        void cell.offsetWidth;
 
-            cell.style.boxShadow =
-                `0 4px 12px ${color}55`;
-
-
-            cell.classList.remove(
-                "cell-pop"
-            );
-
-
-            void cell.offsetWidth;
-
-
-            cell.classList.add(
-                "cell-pop"
-            );
-        }
-    );
+        cell.classList.add(
+            "cell-pop"
+        );
+    });
 
 
     clearLines();
@@ -1283,22 +1424,12 @@ function placePiece(
 
 
 /* =========================================================
-   REWARDING SCORE
+   SCORE
    ========================================================= */
 
 function calculateLineClearScore(
     lineCount
 ) {
-
-    /*
-       1 line  = 10
-       2 lines = 30
-       3 lines = 60
-       4 lines = 100
-       5 lines = 150
-
-       n × (n + 1) × 5
-    */
 
     return (
         lineCount *
@@ -1318,9 +1449,9 @@ function clearLines() {
     const columns = [];
 
 
-    /* =====================================================
-       ROWS
-       ===================================================== */
+    /* -------------------------
+       FIND FULL ROWS
+       ------------------------- */
 
     for (
         let row = 0;
@@ -1329,7 +1460,6 @@ function clearLines() {
     ) {
 
         let full = true;
-
 
         for (
             let column = 0;
@@ -1341,7 +1471,6 @@ function clearLines() {
                 row * boardSize +
                 column;
 
-
             if (
                 !cells[index]
                     .classList
@@ -1354,19 +1483,15 @@ function clearLines() {
             }
         }
 
-
         if (full) {
-
-            rows.push(
-                row
-            );
+            rows.push(row);
         }
     }
 
 
-    /* =====================================================
-       COLUMNS
-       ===================================================== */
+    /* -------------------------
+       FIND FULL COLUMNS
+       ------------------------- */
 
     for (
         let column = 0;
@@ -1375,7 +1500,6 @@ function clearLines() {
     ) {
 
         let full = true;
-
 
         for (
             let row = 0;
@@ -1387,7 +1511,6 @@ function clearLines() {
                 row * boardSize +
                 column;
 
-
             if (
                 !cells[index]
                     .classList
@@ -1400,12 +1523,8 @@ function clearLines() {
             }
         }
 
-
         if (full) {
-
-            columns.push(
-                column
-            );
+            columns.push(column);
         }
     }
 
@@ -1415,67 +1534,66 @@ function clearLines() {
         columns.length;
 
 
-    if (
-        totalLines === 0
-    ) {
+    /* -------------------------
+       NO CLEAR
+       ------------------------- */
+
+    if (totalLines === 0) {
+
+        updatePieceUsability();
 
         return;
     }
 
 
-    /* =====================================================
+    /* -------------------------
        CLEAR ANIMATION
-       ===================================================== */
+       ------------------------- */
 
-    rows.forEach(
-        row => {
+    rows.forEach(row => {
 
-            for (
-                let column = 0;
-                column < boardSize;
-                column++
-            ) {
+        for (
+            let column = 0;
+            column < boardSize;
+            column++
+        ) {
 
-                cells[
-                    row * boardSize +
-                    column
-                ].classList.add(
-                    "cell-clear"
-                );
-            }
+            cells[
+                row * boardSize +
+                column
+            ].classList.add(
+                "cell-clear"
+            );
         }
-    );
+    });
 
 
-    columns.forEach(
-        column => {
+    columns.forEach(column => {
 
-            for (
-                let row = 0;
-                row < boardSize;
-                row++
-            ) {
+        for (
+            let row = 0;
+            row < boardSize;
+            row++
+        ) {
 
-                cells[
-                    row * boardSize +
-                    column
-                ].classList.add(
-                    "cell-clear"
-                );
-            }
+            cells[
+                row * boardSize +
+                column
+            ].classList.add(
+                "cell-clear"
+            );
         }
-    );
+    });
 
 
-    /* =====================================================
+    /* -------------------------
        SCORE
-       ===================================================== */
+       ------------------------- */
 
     const points =
         calculateLineClearScore(
             totalLines
         );
-
 
     score += points;
 
@@ -1485,14 +1603,11 @@ function clearLines() {
         scoreDisplay.textContent =
             score;
 
-
         scoreDisplay.classList.remove(
             "score-reward"
         );
 
-
         void scoreDisplay.offsetWidth;
-
 
         scoreDisplay.classList.add(
             "score-reward"
@@ -1500,9 +1615,9 @@ function clearLines() {
     }
 
 
-    /* =====================================================
+    /* -------------------------
        BEST SCORE
-       ===================================================== */
+       ------------------------- */
 
     if (
         score >
@@ -1512,12 +1627,10 @@ function clearLines() {
         bestScore =
             score;
 
-
         localStorage.setItem(
             "rubiesBest",
             bestScore
         );
-
 
         if (bestDisplay) {
 
@@ -1527,27 +1640,22 @@ function clearLines() {
     }
 
 
-    /* =====================================================
-       SOUND
-       ===================================================== */
+    /* -------------------------
+       EFFECTS
+       ------------------------- */
 
     playClearSound(
         totalLines
     );
-
-
-    /* =====================================================
-       VISUAL REWARD
-       ===================================================== */
 
     showScorePopup(
         points
     );
 
 
-    /* =====================================================
-       REMOVE CLEARED CELLS
-       ===================================================== */
+    /* -------------------------
+       ACTUAL BOARD RESET
+       ------------------------- */
 
     setTimeout(
         () => {
@@ -1556,40 +1664,36 @@ function clearLines() {
                 new Set();
 
 
-            rows.forEach(
-                row => {
+            rows.forEach(row => {
 
-                    for (
-                        let column = 0;
-                        column < boardSize;
-                        column++
-                    ) {
+                for (
+                    let column = 0;
+                    column < boardSize;
+                    column++
+                ) {
 
-                        clearedIndexes.add(
-                            row * boardSize +
-                            column
-                        );
-                    }
+                    clearedIndexes.add(
+                        row * boardSize +
+                        column
+                    );
                 }
-            );
+            });
 
 
-            columns.forEach(
-                column => {
+            columns.forEach(column => {
 
-                    for (
-                        let row = 0;
-                        row < boardSize;
-                        row++
-                    ) {
+                for (
+                    let row = 0;
+                    row < boardSize;
+                    row++
+                ) {
 
-                        clearedIndexes.add(
-                            row * boardSize +
-                            column
-                        );
-                    }
+                    clearedIndexes.add(
+                        row * boardSize +
+                        column
+                    );
                 }
-            );
+            });
 
 
             clearedIndexes.forEach(
@@ -1598,9 +1702,18 @@ function clearLines() {
                     resetCell(
                         cells[index]
                     );
+
                 }
             );
 
+
+            /*
+               IMPORTANT:
+
+               Recalculate every tray piece
+               and the saved HOLD piece
+               after the board physically changes.
+            */
 
             updatePieceUsability();
 
@@ -1614,9 +1727,7 @@ function clearLines() {
    RESET CELL
    ========================================================= */
 
-function resetCell(
-    cell
-) {
+function resetCell(cell) {
 
     cell.classList.remove(
         "filled"
@@ -1630,11 +1741,19 @@ function resetCell(
         "cell-pop"
     );
 
+    cell.classList.remove(
+        "drag-preview"
+    );
+
     cell.style.background =
         "";
 
     cell.style.boxShadow =
         "";
+
+    cell.style.removeProperty(
+        "--preview-color"
+    );
 }
 
 
@@ -1642,24 +1761,21 @@ function resetCell(
    SCORE POPUP
    ========================================================= */
 
-function showScorePopup(
-    points
-) {
+function showScorePopup(points) {
+
+    if (!board) {
+        return;
+    }
 
     const popup =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     popup.classList.add(
         "score-popup"
     );
 
-
     popup.textContent =
         `+${points}`;
-
 
     document.body.appendChild(
         popup
@@ -1669,11 +1785,9 @@ function showScorePopup(
     const rect =
         board.getBoundingClientRect();
 
-
     const centerX =
         rect.left +
         rect.width / 2;
-
 
     const centerY =
         rect.top +
@@ -1688,7 +1802,6 @@ function showScorePopup(
 
 
     const symbols = [
-
         "✦",
         "✧",
         "♡",
@@ -1713,15 +1826,11 @@ function showScorePopup(
     ) {
 
         const particle =
-            document.createElement(
-                "span"
-            );
-
+            document.createElement("span");
 
         particle.classList.add(
             "score-particle"
         );
-
 
         particle.textContent =
             symbols[
@@ -1749,16 +1858,6 @@ function showScorePopup(
             );
 
 
-        const x =
-            Math.cos(angle) *
-            distance;
-
-
-        const y =
-            Math.sin(angle) *
-            distance;
-
-
         particle.style.left =
             `${centerX}px`;
 
@@ -1768,13 +1867,12 @@ function showScorePopup(
 
         particle.style.setProperty(
             "--particle-x",
-            `${x}px`
+            `${Math.cos(angle) * distance}px`
         );
-
 
         particle.style.setProperty(
             "--particle-y",
-            `${y}px`
+            `${Math.sin(angle) * distance}px`
         );
 
 
@@ -1793,9 +1891,7 @@ function showScorePopup(
 
         setTimeout(
             () => {
-
                 particle.remove();
-
             },
             1300
         );
@@ -1804,9 +1900,7 @@ function showScorePopup(
 
     setTimeout(
         () => {
-
             popup.remove();
-
         },
         800
     );
@@ -1817,9 +1911,7 @@ function showScorePopup(
    PARTICLE COUNT
    ========================================================= */
 
-function totalParticlesForScore(
-    points
-) {
+function totalParticlesForScore(points) {
 
     if (points >= 30) {
         return 30;
@@ -1834,15 +1926,11 @@ function totalParticlesForScore(
 
 
 /* =========================================================
-   AUDIO ENGINE
+   AUDIO
    ========================================================= */
 
 let audioContext = null;
 
-
-/* =========================================================
-   GET AUDIO CONTEXT
-   ========================================================= */
 
 function getAudioContext() {
 
@@ -1852,11 +1940,9 @@ function getAudioContext() {
             window.AudioContext ||
             window.webkitAudioContext;
 
-
         if (!AudioContext) {
             return null;
         }
-
 
         audioContext =
             new AudioContext();
@@ -1876,10 +1962,6 @@ function getAudioContext() {
 }
 
 
-/* =========================================================
-   BASIC TONE
-   ========================================================= */
-
 function playTone(
     frequency,
     duration,
@@ -1890,7 +1972,6 @@ function playTone(
     const context =
         getAudioContext();
 
-
     if (!context) {
         return;
     }
@@ -1898,7 +1979,6 @@ function playTone(
 
     const oscillator =
         context.createOscillator();
-
 
     const gain =
         context.createGain();
@@ -1937,7 +2017,6 @@ function playTone(
         gain
     );
 
-
     gain.connect(
         context.destination
     );
@@ -1953,10 +2032,6 @@ function playTone(
 }
 
 
-/* =========================================================
-   PICKUP SOUND
-   ========================================================= */
-
 function playPickupSound() {
 
     playTone(
@@ -1965,7 +2040,6 @@ function playPickupSound() {
         "sine",
         0.025
     );
-
 
     setTimeout(
         () => {
@@ -1983,10 +2057,6 @@ function playPickupSound() {
 }
 
 
-/* =========================================================
-   PLACE SOUND
-   ========================================================= */
-
 function playPlaceSound() {
 
     playTone(
@@ -1995,7 +2065,6 @@ function playPlaceSound() {
         "sine",
         0.025
     );
-
 
     setTimeout(
         () => {
@@ -2013,9 +2082,30 @@ function playPlaceSound() {
 }
 
 
-/* =========================================================
-   CLEAR SOUND
-   ========================================================= */
+function playSaveSound() {
+
+    playTone(
+        620,
+        0.10,
+        "sine",
+        0.022
+    );
+
+    setTimeout(
+        () => {
+
+            playTone(
+                820,
+                0.12,
+                "sine",
+                0.018
+            );
+
+        },
+        45
+    );
+}
+
 
 function playClearSound(
     lineCount
@@ -2055,10 +2145,6 @@ function playClearSound(
 }
 
 
-/* =========================================================
-   GAME OVER SOUND
-   ========================================================= */
-
 function playGameOverSound() {
 
     playTone(
@@ -2067,7 +2153,6 @@ function playGameOverSound() {
         "sine",
         0.025
     );
-
 
     setTimeout(
         () => {
@@ -2086,94 +2171,581 @@ function playGameOverSound() {
 
 
 /* =========================================================
-   CHECK IF A PIECE CAN FIT ANYWHERE
+   CREATE PIECE DATA
    ========================================================= */
 
-function canPieceFitAnywhere(
-    piece
-) {
+function createPieceData() {
 
-    if (
-        !piece ||
-        !piece.shape
-    ) {
-
-        return false;
-    }
-
-
-    for (
-        let index = 0;
-        index < cells.length;
-        index++
-    ) {
-
-        if (
-            calculatePlacement(
-                index,
-                piece.shape
+    const shape =
+        shapes[
+            Math.floor(
+                Math.random() *
+                shapes.length
             )
-        ) {
-
-            return true;
-        }
-    }
+        ];
 
 
-    return false;
+    const color =
+        colors[
+            Math.floor(
+                Math.random() *
+                colors.length
+            )
+        ];
+
+
+    return {
+
+        shape:
+            shape.map(
+                block => [
+                    block[0],
+                    block[1]
+                ]
+            ),
+
+        color,
+
+        source:
+            "tray",
+
+        element:
+            null
+    };
 }
 
 
 /* =========================================================
-   UPDATE PIECE USABILITY
+   CREATE PIECE ELEMENT
    ========================================================= */
 
-function updatePieceUsability() {
+function createPieceElement(piece) {
+
+    const element =
+        document.createElement("div");
+
+    element.classList.add(
+        "piece"
+    );
+
+    element.style.position =
+        "relative";
+
+    element.style.pointerEvents =
+        "auto";
+
+
+    const maxRow =
+        Math.max(
+            ...piece.shape.map(
+                block => block[0]
+            )
+        );
+
+
+    const maxColumn =
+        Math.max(
+            ...piece.shape.map(
+                block => block[1]
+            )
+        );
+
+
+    element.style.gridTemplateColumns =
+        `repeat(${maxColumn + 1}, 18px)`;
+
+    element.style.gridTemplateRows =
+        `repeat(${maxRow + 1}, 18px)`;
+
+
+    piece.shape.forEach(
+        block => {
+
+            const miniCell =
+                document.createElement("div");
+
+            miniCell.classList.add(
+                "piece-cell"
+            );
+
+            miniCell.style.gridRow =
+                block[0] + 1;
+
+            miniCell.style.gridColumn =
+                block[1] + 1;
+
+            miniCell.style.background =
+                piece.color;
+
+            miniCell.style.boxShadow =
+                `0 3px 8px ${piece.color}55`;
+
+            miniCell.style.pointerEvents =
+                "none";
+
+            element.appendChild(
+                miniCell
+            );
+        }
+    );
+
+
+    piece.element =
+        element;
+
+
+    element.pieceData =
+        piece;
+
+
+    return element;
+}
+
+
+/* =========================================================
+   SAVE HEART
+   ========================================================= */
+
+function addSaveButton(piece) {
+
+    const button =
+        document.createElement("button");
+
+    button.type =
+        "button";
+
+    button.className =
+        "piece-save-button";
+
+    button.innerHTML =
+        "♡";
+
+    button.setAttribute(
+        "aria-label",
+        "save piece"
+    );
+
+    button.title =
+        "save for later";
+
+
+    button.addEventListener(
+        "pointerdown",
+        event => {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+        }
+    );
+
+
+    button.addEventListener(
+        "click",
+        event => {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+            savePiece(
+                piece
+            );
+
+        }
+    );
+
+
+    piece.element.appendChild(
+        button
+    );
+}
+
+
+/* =========================================================
+   ADD DRAG HANDLER
+   ========================================================= */
+
+function addPieceDragHandler(piece) {
+
+    piece.element.addEventListener(
+        "pointerdown",
+        event => {
+
+            if (
+                event.target.closest(
+                    ".piece-save-button"
+                )
+            ) {
+
+                return;
+            }
+
+            startDrag(
+                event,
+                piece
+            );
+        }
+    );
+}
+
+
+/* =========================================================
+   CREATE SINGLE TRAY PIECE
+   ========================================================= */
+
+function createSinglePiece() {
+
+    if (!pieceTray) {
+        return null;
+    }
+
+
+    const piece =
+        createPieceData();
+
+
+    piece.source =
+        "tray";
+
+
+    createPieceElement(
+        piece
+    );
+
+
+    addSaveButton(
+        piece
+    );
+
+
+    addPieceDragHandler(
+        piece
+    );
+
+
+    trayPieces.push(
+        piece
+    );
+
+
+    pieceTray.appendChild(
+        piece.element
+    );
+
+
+    updatePieceUsability();
+
+
+    return piece;
+}
+
+
+/* =========================================================
+   CREATE INITIAL TRAY
+   ========================================================= */
+
+function createPieceTray() {
 
     if (!pieceTray) {
         return;
     }
 
 
-    const trayPieces =
-        Array.from(
-            pieceTray.children
+    pieceTray.innerHTML =
+        "";
+
+    trayPieces =
+        [];
+
+
+    for (
+        let i = 0;
+        i < activePieceCount;
+        i++
+    ) {
+
+        createSinglePiece();
+    }
+}
+
+
+/* =========================================================
+   CHECK WHETHER PIECE CAN BE SAVED
+   ========================================================= */
+
+function canSaveUnusablePiece(piece) {
+
+    if (!piece) {
+        return false;
+    }
+
+
+    /*
+       A playable piece can always
+       be saved if HOLD is empty.
+    */
+
+    if (
+        canPieceFitAnywhere(
+            piece
+        )
+    ) {
+
+        return true;
+    }
+
+
+    /*
+       Grey piece:
+
+       another tray piece must be
+       playable right now.
+    */
+
+    const anotherPlayablePiece =
+        trayPieces.some(
+            otherPiece => {
+
+                if (
+                    otherPiece === piece
+                ) {
+
+                    return false;
+                }
+
+                return canPieceFitAnywhere(
+                    otherPiece
+                );
+            }
         );
 
 
-    trayPieces.forEach(
-        element => {
-
-            const usable =
-                canPieceFitAnywhere(
-                    element
-                );
+    return anotherPlayablePiece;
+}
 
 
-            element.classList.toggle(
-                "unusable",
-                !usable
-            );
-        }
+/* =========================================================
+   SAVE PIECE
+   ========================================================= */
+
+function savePiece(piece) {
+
+    if (
+        !piece ||
+        gameOver ||
+        dragging
+    ) {
+
+        return;
+    }
+
+
+    /*
+       HOLD can contain only one piece.
+    */
+
+    if (holdPiece) {
+        return;
+    }
+
+
+    const index =
+        trayPieces.indexOf(
+            piece
+        );
+
+
+    if (index === -1) {
+        return;
+    }
+
+
+    /*
+       Grey pieces need another
+       playable tray piece.
+    */
+
+    if (
+        !canSaveUnusablePiece(
+            piece
+        )
+    ) {
+
+        updatePieceUsability();
+
+        checkGameOver();
+
+        return;
+    }
+
+
+    /*
+       Remove from tray.
+    */
+
+    trayPieces.splice(
+        index,
+        1
     );
 
 
-    if (
-        holdPiece &&
-        holdPiece.element
-    ) {
-
-        const usable =
-            canPieceFitAnywhere(
-                holdPiece
-            );
-
-
-        holdPiece.element.classList.toggle(
-            "unusable",
-            !usable
-        );
+    if (piece.element) {
+        piece.element.remove();
     }
+
+
+    /*
+       Move into HOLD.
+    */
+
+    piece.source =
+        "hold";
+
+    holdPiece =
+        piece;
+
+
+    /*
+       Immediately refill tray
+       back to exactly 3.
+    */
+
+    createSinglePiece();
+
+
+    /*
+       Render saved piece.
+    */
+
+    renderHoldPiece();
+
+
+    /*
+       Recalculate usability.
+    */
+
+    updatePieceUsability();
+
+
+    playSaveSound();
+
+
+    /*
+       Saving may change whether
+       the resulting set is game over.
+    */
+
+    scheduleGameOverCheck(
+        100
+    );
+}
+
+
+/* =========================================================
+   RENDER HOLD PIECE
+   ========================================================= */
+
+function renderHoldPiece() {
+
+    if (!holdSlot) {
+        return;
+    }
+
+
+    holdSlot.innerHTML =
+        "";
+
+
+    if (!holdPiece) {
+
+        holdSlot.classList.remove(
+            "has-piece"
+        );
+
+        holdSlot.classList.remove(
+            "unusable"
+        );
+
+
+        const empty =
+            document.createElement("div");
+
+        empty.className =
+            "hold-empty";
+
+        empty.textContent =
+            "♡";
+
+
+        holdSlot.appendChild(
+            empty
+        );
+
+        return;
+    }
+
+
+    holdSlot.classList.add(
+        "has-piece"
+    );
+
+
+    /*
+       HOLD does not have a save button.
+    */
+
+    const saveButton =
+        holdPiece.element.querySelector(
+            ".piece-save-button"
+        );
+
+    if (saveButton) {
+        saveButton.remove();
+    }
+
+
+    holdSlot.appendChild(
+        holdPiece.element
+    );
+
+
+    holdPiece.source =
+        "hold";
+
+
+    holdPiece.element.classList.remove(
+        "piece-dragging"
+    );
+
+    holdPiece.element.classList.remove(
+        "piece-used"
+    );
+
+
+    holdPiece.element.style.cursor =
+        "grab";
+
+    holdPiece.element.style.pointerEvents =
+        "auto";
+
+
+    const usable =
+        canPieceFitAnywhere(
+            holdPiece
+        );
+
+
+    holdPiece.element.classList.toggle(
+        "unusable",
+        !usable
+    );
+
+    holdSlot.classList.toggle(
+        "unusable",
+        !usable
+    );
 }
 
 
@@ -2188,18 +2760,15 @@ function checkGameOver() {
     }
 
 
+    updatePieceUsability();
+
+
     /*
-       First check the three active
-       tray pieces.
+       ANY tray piece that fits
+       means the game continues.
     */
 
-    const pieces =
-        Array.from(
-            pieceTray.children
-        );
-
-
-    for (const piece of pieces) {
+    for (const piece of trayPieces) {
 
         if (
             canPieceFitAnywhere(
@@ -2207,18 +2776,13 @@ function checkGameOver() {
             )
         ) {
 
-            updatePieceUsability();
-
             return;
         }
     }
 
 
     /*
-       Then check the saved piece.
-
-       This means a usable saved piece
-       keeps the game alive.
+       HOLD can also keep the game alive.
     */
 
     if (
@@ -2228,13 +2792,82 @@ function checkGameOver() {
         )
     ) {
 
-        updatePieceUsability();
-
         return;
     }
 
 
+    /*
+       Nothing can move.
+    */
+
     showGameOver();
+}
+
+
+/* =========================================================
+   SCHEDULE GAME OVER CHECK
+   ========================================================= */
+
+function scheduleGameOverCheck(
+    delay = 100
+) {
+
+    if (
+        gameOverCheckTimer !== null
+    ) {
+
+        clearTimeout(
+            gameOverCheckTimer
+        );
+    }
+
+
+    gameOverCheckTimer =
+        setTimeout(
+            () => {
+
+                gameOverCheckTimer =
+                    null;
+
+                if (!gameOver) {
+
+                    updatePieceUsability();
+
+                    checkGameOver();
+                }
+
+            },
+            delay
+        );
+}
+
+
+/* =========================================================
+   CLOSE GAME OVER
+   ========================================================= */
+
+function closeGameOverOverlay() {
+
+    if (
+        gameOverCheckTimer !== null
+    ) {
+
+        clearTimeout(
+            gameOverCheckTimer
+        );
+
+        gameOverCheckTimer =
+            null;
+    }
+
+
+    if (gameOverOverlay) {
+
+        gameOverOverlay.remove();
+
+        gameOverOverlay =
+            null;
+    }
 }
 
 
@@ -2249,25 +2882,18 @@ function showGameOver() {
     }
 
 
-    gameOver = true;
+    gameOver =
+        true;
 
 
-    clearPreview();
-
-    stopGhostAnimation();
-
-    removeDragGhost();
+    cancelDrag();
 
 
     const overlay =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
 
-
-    overlay.classList.add(
-        "game-over-overlay"
-    );
+    overlay.className =
+        "game-over-overlay";
 
 
     overlay.innerHTML = `
@@ -2293,6 +2919,7 @@ function showGameOver() {
             <button
                 class="game-over-button"
                 id="play-again"
+                type="button"
             >
                 play again
             </button>
@@ -2311,19 +2938,24 @@ function showGameOver() {
         overlay;
 
 
-    const playAgainButton =
+    const playAgain =
         overlay.querySelector(
             "#play-again"
         );
 
 
-    if (playAgainButton) {
+    if (playAgain) {
 
-        playAgainButton.addEventListener(
+        playAgain.addEventListener(
             "click",
             () => {
 
                 startNewGame();
+
+                showScreen(
+                    gameScreen
+                );
+
             }
         );
     }
@@ -2334,577 +2966,44 @@ function showGameOver() {
 
 
 /* =========================================================
-   SAVE PIECE
-   ========================================================= */
-
-function savePiece(
-    piece
-) {
-
-    if (
-        !piece ||
-        gameOver ||
-        dragging
-    ) {
-
-        return;
-    }
-
-
-    /*
-       If a piece is already saved,
-       do nothing.
-
-       This keeps one clean hold slot.
-    */
-
-    if (holdPiece) {
-        return;
-    }
-
-
-    const element =
-        piece.element;
-
-
-    /*
-       Remove from tray first.
-    */
-
-    element.remove();
-
-
-    /*
-       Save it.
-    */
-
-    holdPiece =
-        piece;
-
-    piece.source =
-        "hold";
-
-
-    /*
-       Immediately generate a
-       replacement.
-
-       Therefore the main tray
-       always stays at 3 pieces.
-    */
-
-    createSinglePiece(
-        "tray"
-    );
-
-
-    renderHoldPiece();
-
-    updatePieceUsability();
-
-
-    playSaveSound();
-}
-
-
-/* =========================================================
-   RENDER HOLD PIECE
-   ========================================================= */
-
-function renderHoldPiece() {
-
-    if (!holdSlot) {
-        return;
-    }
-
-
-    holdSlot.innerHTML = "";
-
-
-    if (!holdPiece) {
-
-        holdSlot.classList.remove(
-            "has-piece"
-        );
-
-
-        const empty =
-            document.createElement(
-                "div"
-            );
-
-
-        empty.classList.add(
-            "hold-empty"
-        );
-
-
-        empty.textContent =
-            "♡";
-
-
-        holdSlot.appendChild(
-            empty
-        );
-
-
-        return;
-    }
-
-
-    holdSlot.classList.add(
-        "has-piece"
-    );
-
-
-    holdSlot.appendChild(
-        holdPiece.element
-    );
-
-
-    holdPiece.element.classList.remove(
-        "piece-used"
-    );
-
-
-    holdPiece.element.classList.remove(
-        "piece-dragging"
-    );
-
-
-    /*
-       Re-enable dragging from hold.
-    */
-
-    holdPiece.element.style.cursor =
-        "grab";
-}
-
-
-/* =========================================================
-   SAVE BUTTON
-   ========================================================= */
-
-function createSaveButton(
-    piece
-) {
-
-    const button =
-        document.createElement(
-            "button"
-        );
-
-
-    button.type =
-        "button";
-
-
-    button.classList.add(
-        "piece-save-button"
-    );
-
-
-    button.textContent =
-        "♡";
-
-
-    /*
-       Inline visual properties so
-       this still works even if the
-       CSS button styling changes.
-    */
-
-    button.style.position =
-        "absolute";
-
-    button.style.right =
-        "4px";
-
-    button.style.top =
-        "3px";
-
-    button.style.width =
-        "21px";
-
-    button.style.height =
-        "21px";
-
-    button.style.padding =
-        "0";
-
-    button.style.border =
-        "none";
-
-    button.style.background =
-        "transparent";
-
-    button.style.color =
-        "rgba(255,255,255,0.62)";
-
-    button.style.fontFamily =
-        '"Delius", cursive';
-
-    button.style.fontSize =
-        "13px";
-
-    button.style.lineHeight =
-        "21px";
-
-    button.style.cursor =
-        "pointer";
-
-    button.style.zIndex =
-        "20";
-
-
-    button.addEventListener(
-        "pointerdown",
-        event => {
-
-            event.preventDefault();
-
-            event.stopPropagation();
-        }
-    );
-
-
-    button.addEventListener(
-        "pointerup",
-        event => {
-
-            event.preventDefault();
-
-            event.stopPropagation();
-
-
-            savePiece(
-                piece
-            );
-        }
-    );
-
-
-    piece.element.appendChild(
-        button
-    );
-}
-
-
-/* =========================================================
-   SAVE SOUND
-   ========================================================= */
-
-function playSaveSound() {
-
-    playTone(
-        620,
-        0.10,
-        "sine",
-        0.022
-    );
-
-
-    setTimeout(
-        () => {
-
-            playTone(
-                820,
-                0.12,
-                "sine",
-                0.018
-            );
-
-        },
-        45
-    );
-}
-
-
-/* =========================================================
-   CREATE PIECE
-   ========================================================= */
-
-function createSinglePiece(
-    source = "tray"
-) {
-
-    if (!pieceTray) {
-        return null;
-    }
-
-
-    const element =
-        document.createElement(
-            "div"
-        );
-
-
-    element.classList.add(
-        "piece"
-    );
-
-
-    /*
-       Random shape
-    */
-
-    const shape =
-        shapes[
-            Math.floor(
-                Math.random() *
-                shapes.length
-            )
-        ];
-
-
-    /*
-       Random color
-    */
-
-    const color =
-        colors[
-            Math.floor(
-                Math.random() *
-                colors.length
-            )
-        ];
-
-
-    const piece = {
-
-        element:
-            element,
-
-        shape:
-            shape,
-
-        color:
-            color,
-
-        source:
-            source
-    };
-
-
-    element.shape =
-        shape;
-
-    element.color =
-        color;
-
-
-    element.pieceData =
-        piece;
-
-
-    element.style.setProperty(
-        "--piece-color",
-        color
-    );
-
-
-    /*
-       Shape dimensions
-    */
-
-    const maxRow =
-        Math.max(
-            ...shape.map(
-                block => block[0]
-            )
-        );
-
-
-    const maxColumn =
-        Math.max(
-            ...shape.map(
-                block => block[1]
-            )
-        );
-
-
-    element.style.gridTemplateColumns =
-        `repeat(
-            ${maxColumn + 1},
-            18px
-        )`;
-
-
-    element.style.gridTemplateRows =
-        `repeat(
-            ${maxRow + 1},
-            18px
-        )`;
-
-
-    /*
-       Draw blocks
-    */
-
-    shape.forEach(
-        block => {
-
-            const blockElement =
-                document.createElement(
-                    "div"
-                );
-
-
-            blockElement.classList.add(
-                "piece-cell"
-            );
-
-
-            blockElement.style.gridRow =
-                block[0] + 1;
-
-
-            blockElement.style.gridColumn =
-                block[1] + 1;
-
-
-            blockElement.style.background =
-                color;
-
-
-            blockElement.style.boxShadow =
-                `0 3px 8px ${color}55`;
-
-
-            blockElement.style.pointerEvents =
-                "none";
-
-
-            element.appendChild(
-                blockElement
-            );
-        }
-    );
-
-
-    /*
-       Only tray pieces get
-       a save button.
-
-       The hold piece is already
-       saved.
-    */
-
-    if (
-        source === "tray"
-    ) {
-
-        createSaveButton(
-            piece
-        );
-    }
-
-
-    /*
-       Drag.
-    */
-
-    element.addEventListener(
-        "pointerdown",
-        event => {
-
-            /*
-               If the save button was
-               touched, don't start drag.
-            */
-
-            if (
-                event.target.closest(
-                    ".piece-save-button"
-                )
-            ) {
-
-                return;
-            }
-
-
-            startDrag(
-                event,
-                piece
-            );
-        }
-    );
-
-
-    if (
-        source === "tray"
-    ) {
-
-        pieceTray.appendChild(
-            element
-        );
-    }
-
-
-    return piece;
-}
-
-
-/* =========================================================
-   CREATE INITIAL PIECE TRAY
-   ========================================================= */
-
-function createPieceTray() {
-
-    if (!pieceTray) {
-        return;
-    }
-
-
-    pieceTray.innerHTML =
-        "";
-
-
-    for (
-        let i = 0;
-        i < activePieceCount;
-        i++
-    ) {
-
-        createSinglePiece(
-            "tray"
-        );
-    }
-}
-
-
-/* =========================================================
    START NEW GAME
    ========================================================= */
 
 function startNewGame() {
 
-    if (dragging) {
-        cancelDrag();
-    }
+    cancelDrag();
 
 
-    clearPreview();
+    if (
+        gameOverCheckTimer !== null
+    ) {
 
-    stopGhostAnimation();
+        clearTimeout(
+            gameOverCheckTimer
+        );
 
-    removeDragGhost();
-
-
-    if (gameOverOverlay) {
-
-        gameOverOverlay.remove();
-
-        gameOverOverlay =
+        gameOverCheckTimer =
             null;
     }
 
 
-    gameOver = false;
+    closeGameOverOverlay();
 
-    score = 0;
 
-    holdPiece = null;
+    gameOver =
+        false;
+
+
+    score =
+        0;
+
+
+    holdPiece =
+        null;
+
+
+    trayPieces =
+        [];
 
 
     if (scoreDisplay) {
@@ -2914,33 +3013,29 @@ function startNewGame() {
     }
 
 
-    if (cells.length === 0) {
-
-        createBoard();
-
-    } else {
-
-        cells.forEach(
-            cell => {
-
-                resetCell(
-                    cell
-                );
-            }
-        );
-    }
-
+    createBoard();
 
     createPieceTray();
 
     renderHoldPiece();
 
     updatePieceUsability();
+
+
+    /*
+       Normally the initial tray has moves.
+       Still check it properly instead of
+       assuming.
+    */
+
+    scheduleGameOverCheck(
+        100
+    );
 }
 
 
 /* =========================================================
-   POINTER MOVE
+   GLOBAL POINTER MOVE
    ========================================================= */
 
 document.addEventListener(
@@ -2951,10 +3046,10 @@ document.addEventListener(
             return;
         }
 
-
         updateDragPosition(
             event
         );
+
     },
     {
         passive: false
@@ -2963,7 +3058,7 @@ document.addEventListener(
 
 
 /* =========================================================
-   POINTER UP
+   GLOBAL POINTER UP
    ========================================================= */
 
 document.addEventListener(
@@ -2974,10 +3069,10 @@ document.addEventListener(
             return;
         }
 
-
         endDrag(
             event
         );
+
     },
     {
         passive: false
@@ -2994,21 +3089,21 @@ document.addEventListener(
     () => {
 
         cancelDrag();
+
     }
 );
 
 
 /* =========================================================
-   SAFETY
+   WINDOW BLUR SAFETY
    ========================================================= */
 
 window.addEventListener(
     "blur",
     () => {
 
-        if (dragging) {
-            cancelDrag();
-        }
+        cancelDrag();
+
     }
 );
 
@@ -3017,23 +3112,14 @@ window.addEventListener(
    INITIALISE
    ========================================================= */
 
-createBoard();
-
 setupNavigation();
 
-renderHoldPiece();
-
-updatePieceUsability();
-
-
-/*
-   Start on home screen.
-
-   If the new landing page exists,
-   don't immediately show the game.
-*/
 
 if (homeScreen) {
+
+    /*
+       Landing page first.
+    */
 
     showScreen(
         homeScreen
@@ -3042,7 +3128,7 @@ if (homeScreen) {
 } else {
 
     /*
-       Fallback for the older HTML.
+       Fallback for older HTML.
     */
 
     startNewGame();
